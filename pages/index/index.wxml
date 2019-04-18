@@ -1,0 +1,1 @@
+<ruff-table header="{{header}}" list="{{list}}" total="{{total}}" count="{{count}}" bind:click="tableClick" bind:change="tableChange"></ruff-table>
