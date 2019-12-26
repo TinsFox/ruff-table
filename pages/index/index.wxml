@@ -1,1 +1,1 @@
-<ruff-table header="{{ header }}" list="{{ list }}" pages="{{ total }}" size="{{ pageSize }}" bind:click="tableClick" bind:current-change="tableChange" bind:size-change="pageSizeChange"></ruff-table>
+<ruff-table header="{{ header }}" list="{{ list }}" pages="{{ total }}" size="{{ count }}" bind:click="tableClick" bind:current-change="tableChange" bind:size-change="pageSizeChange"></ruff-table>

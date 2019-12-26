@@ -30,7 +30,6 @@ Page({
         prop: 'isRelease',
         width: 70
     }],
-    originList: [],
     list: [{
         time: '2019-01-01 00:01:01',
         equipName: '西城区52号3502',
@@ -59,7 +58,7 @@ Page({
       });
     }
     this.setData({
-      count: 4,
+      count: 5,
       originList: arr,
       list: this.data.list.concat(arr).slice(0, 6),
       total: Math.ceil(arr.length / 6)
