@@ -8,90 +8,120 @@ Component({
             type: Array,
             value: []
         },
-        total: { // 总数据条数
+        pages: { // 总数据条数
             type: Number,
             value: 0
         },
-        count: {
+        size: {
             type: Number, // 每一页多少条数据
             value: 0
-        },
-        pagination: { // 是否开启分页
-            type: Boolean,
-            value: true
         }
     },
     observers: {
         'header': function(newData, oldData) {
-            let arr = newData.map(item => {
-                return item.width;
-            });
-            this.setData({
-                cellWidthList: arr
-            });
+            if (newData && newData.length) {
+                let fixedList = [], fixedWidth = 0
+                let arr = newData.filter(item => {
+                    if (item.fixed) {
+                        fixedWidth += item.width
+                        fixedList.push(item)
+                    } else {
+                        return item
+                    }
+                })
+                this.setData({
+                    normalHeader: arr,
+                    fixedWidth: fixedWidth,
+                    fixedHeader: fixedList
+                });
+            }
         },
-        'list': function(newData, oldData) {},
-        'total': function(newData, oldData) {
-            console.log(newData);
+        'list': function(newData, oldData) {
+            if (newData && newData.length) {
+                let temp = null, t = []
+                t = newData.map(item => {
+                    temp = null
+                    
+                    Object.keys(item).forEach(key => {
+                        for(let i = 0; i < this.data.fixedHeader.length; i++) {
+                            if (key == this.data.fixedHeader[i].prop) {
+                                temp = key
+                                break
+                            }
+                        }
+                    })
+                    if (temp) return item
+                })
+                this.setData({
+                    fixedColumns: t
+                })
+            }
         },
-        'count': function(newData, oldData) {
-            console.log(newData);
-        },
-        'pagination': function(newData, oldData) {}
+        'pages': function(newData, oldData) {},
+        'size': function(newData, oldData) {}
     },
+    externalClasses: ['ruff-td-class'],
     data: {
-        flag: false,
         current: 1,
-        cellWidthList: []
+        fixedWidth: 0,
+        fixedHeader: [],
+        fixedColumns: [],
+        normalHeader: [],
+        showShadow: false
     },
     methods: {
-        clickHere(e) {
-            this.triggerEvent('click', { index: e.currentTarget.dataset.no }, { bubbles: true });
+        onClick(e) {
+            const index = e.currentTarget.dataset.index;
+            this.triggerEvent('click', { index: index, row: this.data.list[index] }, { bubbles: true });
         },
-        previous() {
+        onScroll(e) {
+            if (e.detail.scrollLeft > 40) {
+                this.setData({
+                    showShadow: true
+                })
+            } else {
+                this.setData({
+                    showShadow: false
+                })
+            }
+        },
+        onPrevious() {
             if (this.data.current - 1 > 0) {
                 this.setData({
-                    flag: false,
                     current: this.data.current - 1
                 });
-                this.triggerEvent('change', { current: this.data.current, total: this.data.total }, { bubbles: true });
-            } else {
-                this.triggerEvent('change', { code: 0, msg: '跳转页数不能小于0' }, { bubbles: true });
+                
             }
+            this.triggerEvent('current-change', { current: this.data.current, pages: this.data.pages }, { bubbles: true });
         },
-        next() {
-            if (this.data.current + 1 <= this.data.total) {
+        onNext() {
+            if (this.data.current + 1 <= this.data.pages) {
                 this.setData({
-                    flag: false,
                     current: this.data.current + 1
                 });
-                this.triggerEvent('change', { current: this.data.current, total: this.data.total }, { bubbles: true });
-            } else {
-                this.triggerEvent('change', { code: 0, msg: '跳转页数不能大于总页数' }, { bubbles: true });
+                
             }
+            this.triggerEvent('current-change', { current: this.data.current, pages: this.data.pages }, { bubbles: true });
         },
-        jump() {
-            if (this.data.flag) {
-                this.triggerEvent('change', { code: 0, msg: '跳转页数不能小于0或者大于总页数' }, { bubbles: true });
-            } else {
-                this.triggerEvent('change', { current: this.data.current, total: this.data.total }, { bubbles: true });
-            }
+        onJump() {
+            this.triggerEvent('current-change', { current: this.data.current, pages: this.data.pages }, { bubbles: true });
         },
-        pageBlur(e) {
-            if (Number(e.detail.value) > 0 && Number(e.detail.value) <= this.data.total) {
+        onSizeBlur(e) {
+            this.triggerEvent('size-change', { size: parseInt(e.detail.value) }, { bubbles: true });
+        } ,
+        onCurrentBlur(e) {
+            if (Number(e.detail.value) > 0 && Number(e.detail.value) <= this.data.pages) {
                 this.setData({
                     current: Number(e.detail.value)
                 });
             } else {
                 this.setData({
-                    flag: true
+                    current: 1
                 });
             }
         }
     },
-    created() {}, // 组件在内存中创建完毕执行 created 组件实例化，但节点树还未导入，因此这时不能用setData
-    attached() {}, // 组件挂载之前执行 节点树完成，可以用setData渲染节点，但无法操作节点
-    ready() {}, // 组件挂载后执行 组件布局完成，这时可以获取节点信息，也可以操作节点
-    detached() {}, // 组件移除执行 组件实例从节点树中移除
-    moved() {}, // 组件移动的时候执行 组件实例被移动到树的另一个位置
+    created() {},
+    attached() {},
+    ready() {}
 });
